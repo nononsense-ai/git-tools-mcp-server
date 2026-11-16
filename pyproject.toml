@@ -1,5 +1,5 @@
 [project]
-name = "git-tools-practice"
+name = "git-tools-mcp-server"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -8,7 +8,7 @@ requires-python = ">=3.14"
 dependencies = ["mcp[cli]>=2.3.0"]
 
 [project.scripts]
-git-tools-practice = "git_tools_practice.server:main"
+git-tools-mcp-server = "git_tools_mcp_server.server:main"
 
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]

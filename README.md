@@ -1,4 +1,4 @@
-# mcp-01-git-tools
+# git-tools-mcp-server
 
 A small MCP server in Python that exposes two git tools over stdio. This is part 1 of a series on MCP; the server side comes first, and a client that talks to it comes in the next part.
 
@@ -6,10 +6,10 @@ No model is involved, so you don't need an API key. Anything that speaks MCP can
 
 ## Tools
 
-| Tool | Arguments | What it does |
-|---|---|---|
-| `git_diff` | `staged: bool = True`, `path: str \| None = None` | Runs `git diff --staged` (or plain `git diff` when `staged` is false), optionally for one file. Returns `(no changes)` if the diff is empty, or an error if `path` does not exist in the repo. The tool cuts diffs over 10,000 characters and adds a note telling the model to call again with `path`. |
-| `git_commit` | `message: str` | Runs `git commit -m <message>` on whatever is staged. Rejects empty messages. |
+| Tool         | Arguments                                         | What it does                                                                                                                                                                                                                                                                                           |
+| ------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `git_diff`   | `staged: bool = True`, `path: str \| None = None` | Runs `git diff --staged` (or plain `git diff` when `staged` is false), optionally for one file. Returns `(no changes)` if the diff is empty, or an error if `path` does not exist in the repo. The tool cuts diffs over 10,000 characters and adds a note telling the model to call again with `path`. |
+| `git_commit` | `message: str`                                    | Runs `git commit -m <message>` on whatever is staged. Rejects empty messages.                                                                                                                                                                                                                          |
 
 The tool descriptions come from the docstrings and the input schemas come from the type hints, so there's nothing to keep in sync by hand. The `git_commit` docstring tells the model to call `git_diff` first so the message matches the real changes.
 
@@ -25,8 +25,8 @@ Failures raise `ToolError`, which the client sees as an error result with the re
 ## Setup
 
 ```bash
-git clone https://github.com/nononsense-ai/mcp-01-git-tools.git
-cd mcp-01-git-tools
+git clone https://github.com/nononsense-ai/git-tools-mcp-server.git
+cd git-tools-mcp-server
 uv sync
 ```
 
@@ -39,7 +39,7 @@ The server runs git in the folder named by the `GIT_TOOLS_REPO` environment vari
 Directly (it will look hung, because it's waiting for JSON on stdin):
 
 ```bash
-GIT_TOOLS_REPO=/path/to/a/repo uv run git-tools-practice
+GIT_TOOLS_REPO=/path/to/a/repo uv run git-tools-mcp-server
 ```
 
 In the MCP Inspector:
@@ -47,7 +47,7 @@ In the MCP Inspector:
 ```bash
 npx @modelcontextprotocol/inspector@latest \
   -e GIT_TOOLS_REPO=/path/to/a/repo \
-  uv run git-tools-practice
+  uv run git-tools-mcp-server
 ```
 
 Keep the `-e` flag. The Inspector doesn't forward your shell's variables to the server it launches, so `GIT_TOOLS_REPO=... npx ...` won't work.
@@ -56,7 +56,7 @@ In Claude Code:
 
 ```bash
 claude mcp add git-tools -e GIT_TOOLS_REPO=/path/to/a/repo -- \
-  uv --directory /absolute/path/to/mcp-01-git-tools run git-tools-practice
+  uv --directory /absolute/path/to/git-tools-mcp-server run git-tools-mcp-server
 ```
 
 In Claude Desktop (this is the exercise in the video): open Settings, Developer, Edit Config, and add the server to `claude_desktop_config.json`. Desktop doesn't use your shell's PATH, so give the full path to `uv` (`which uv`) and use absolute paths everywhere:
@@ -68,9 +68,9 @@ In Claude Desktop (this is the exercise in the video): open Settings, Developer,
       "command": "/absolute/path/to/uv",
       "args": [
         "--directory",
-        "/absolute/path/to/mcp-01-git-tools",
+        "/absolute/path/to/git-tools-mcp-server",
         "run",
-        "git-tools-practice"
+        "git-tools-mcp-server"
       ],
       "env": {
         "GIT_TOOLS_REPO": "/absolute/path/to/a/repo"
@@ -101,8 +101,8 @@ The tests create a throwaway repo in a temp directory and call the tools through
 ## Layout
 
 ```
-mcp-01-git-tools/
-  src/git_tools_practice/
+git-tools-mcp-server/
+  src/git_tools_mcp_server/
     git_ops.py   subprocess wrappers around git, return "OK: ..." or "ERROR: ..." strings
     server.py    the MCP tools; turns ERROR strings into ToolError
   scripts/
@@ -117,7 +117,7 @@ mcp-01-git-tools/
 
 - stdout belongs to the protocol. Don't `print()` in tool code; log to stderr.
 - `git_commit` has no approval step. The host or client is responsible for asking a human before it sends `tools/call`. Keep tool approval on for `git_commit`; do not connect this server to a client that auto-approves it.
-- [src/git_tools_practice/__init__.py](src/git_tools_practice/__init__.py) still holds the `uv init` placeholder `main()`; the real entry point is `server:main`.
+- [src/git_tools_mcp_server/__init__.py](src/git_tools_mcp_server/__init__.py) still holds the `uv init` placeholder `main()`; the real entry point is `server:main`.
 
 ## Code at each step
 

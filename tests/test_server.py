@@ -3,7 +3,7 @@ import subprocess
 import pytest
 from mcp import Client
 
-from git_tools_practice.server import mcp
+from git_tools_mcp_server.server import mcp
 
 
 def git(repo, *args):

@@ -12,7 +12,7 @@ import os
 import subprocess
 
 p = subprocess.Popen(
-    ["uv", "run", "git-tools-practice"],
+    ["uv", "run", "git-tools-mcp-server"],
     stdin=subprocess.PIPE,
     stdout=subprocess.PIPE,
     stderr=subprocess.DEVNULL,
