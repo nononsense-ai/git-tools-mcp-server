@@ -1,8 +1,10 @@
 import subprocess
+import sys
 
 import pytest
 from mcp import Client
 
+from git_tools_mcp_server import server
 from git_tools_mcp_server.server import mcp
 
 
@@ -109,3 +111,28 @@ async def test_diff_unknown_path_is_an_error_not_no_changes(repo):
     assert result.is_error
     assert "path not found" in text_of(result)
 
+
+def run_main(monkeypatch, *argv):
+    calls = []
+    monkeypatch.setattr(server.mcp, "run", lambda *a, **kw: calls.append((a, kw)))
+    monkeypatch.setattr(sys, "argv", ["git-tools-mcp-server", *argv])
+    server.main()
+    return calls
+
+
+def test_default_transport_is_stdio(monkeypatch):
+    assert run_main(monkeypatch) == [((), {})]
+
+
+def test_http_transport_defaults_to_loopback_port_8000(monkeypatch):
+    assert run_main(monkeypatch, "--transport", "streamable-http") == [
+        (("streamable-http",), {"host": "127.0.0.1", "port": 8000})
+    ]
+
+
+def test_cli_port_is_parsed_as_an_int(monkeypatch):
+    [(_, kwargs)] = run_main(
+        monkeypatch, "--transport", "streamable-http", "--port", "9000"
+    )
+    assert kwargs["port"] == 9000
+    assert isinstance(kwargs["port"], int)
